@@ -1,11 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for
+import sqlite3
 
 app = Flask(__name__)
 
 # Temporary storage (replace later with database)
-users = []
-posts = []
 current_user_id = 1
+
+def init_db():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
+    # Users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            email TEXT,
+            neighborhood TEXT,
+            dog_name TEXT,
+            dog_breed TEXT
+        )
+    """)
+
+    # Posts table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
+            neighborhood TEXT,
+            time TEXT,
+            type TEXT,
+            user_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
 
 @app.route("/")
 def home():
@@ -24,21 +56,20 @@ def register():
         dog_name = request.form.get("dog_name")
         dog_breed = request.form.get("dog_breed")
 
-        # Store it (temporary)
-        user = {
-            "id": len(users) + 1,
-            "username": username,
-            "email": email,
-            "neighborhood": neighborhood,
-            "dog": {
-                "name": dog_name,
-                "breed": dog_breed
-            }
-        }
+        # Store it 
 
-        users.append(user)
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
 
-        return redirect(url_for("success"))
+        cursor.execute("""
+            INSERT INTO users (username, email, neighborhood, dog_name, dog_breed)
+            VALUES (?, ?, ?, ?, ?)
+        """, (username, email, neighborhood, dog_name, dog_breed))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("board"))
 
     return render_template("register.html")
 
@@ -59,35 +90,55 @@ def board():
         time = request.form.get("time")
         post_type = request.form.get("type")
 
-        post = {
-            "title": title,
-            "description": description,
-            "neighborhood": neighborhood,
-            "time": time,
-            "type": post_type,
-            "user_id": current_user_id
-        }
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
 
-        posts.append(post)
+        cursor.execute("""
+            INSERT INTO posts (title, description, neighborhood, time, type, user_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (title, description, neighborhood, time, post_type, current_user_id))
 
-    # Filtering
+        conn.commit()
+        conn.close()
+
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+
     selected_neighborhood = request.args.get("neighborhood")
 
     if selected_neighborhood and selected_neighborhood != "":
-        filtered_posts = [
-            post for post in posts
-            if post["neighborhood"] == selected_neighborhood
-        ]
+        cursor.execute("""
+            SELECT posts.*, users.username
+            FROM posts
+            JOIN users ON posts.user_id = users.id
+            WHERE posts.neighborhood = ?
+        """, (selected_neighborhood,))
     else:
-        filtered_posts = posts
+        cursor.execute("""
+            SELECT posts.*, users.username
+            FROM posts
+            JOIN users ON posts.user_id = users.id
+        """)
 
-    for post in filtered_posts:
-        user = next((u for u in users if u["id"] == post["user_id"]), None)
-        post["username"] = user["username"] if user else "Unknown"
+    rows = cursor.fetchall()
+    conn.close()
+
+    posts = []
+    for row in rows:
+        posts.append({
+            "id": row[0],
+            "title": row[1],
+            "description": row[2],
+            "neighborhood": row[3],
+            "time": row[4],
+            "type": row[5],
+            "user_id": row[6],
+            "username": row[7]
+        })
 
     return render_template(
         "board.html",
-        posts=filtered_posts,
+        posts=posts,
         selected_neighborhood=selected_neighborhood
     )
 
@@ -107,5 +158,8 @@ def profile():
 def tokens():
     return "<h2>Tokens system (coming soon)</h2>"
 
+init_db()
+
 if __name__ == "__main__":
     app.run(debug=True)
+
