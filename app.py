@@ -5,6 +5,7 @@ app = Flask(__name__)
 # Temporary storage (replace later with database)
 users = []
 posts = []
+current_user_id = 1
 
 @app.route("/")
 def home():
@@ -14,6 +15,7 @@ def home():
 def register():
     if request.method == "POST":
         # Get user data
+        
         username = request.form.get("username")
         email = request.form.get("email")
         neighborhood = request.form.get("neighborhood")
@@ -24,6 +26,7 @@ def register():
 
         # Store it (temporary)
         user = {
+            "id": len(users) + 1,
             "username": username,
             "email": email,
             "neighborhood": neighborhood,
@@ -61,12 +64,32 @@ def board():
             "description": description,
             "neighborhood": neighborhood,
             "time": time,
-            "type": post_type
+            "type": post_type,
+            "user_id": current_user_id
         }
 
         posts.append(post)
 
-    return render_template("board.html", posts=posts)
+    # Filtering
+    selected_neighborhood = request.args.get("neighborhood")
+
+    if selected_neighborhood and selected_neighborhood != "":
+        filtered_posts = [
+            post for post in posts
+            if post["neighborhood"] == selected_neighborhood
+        ]
+    else:
+        filtered_posts = posts
+
+    for post in filtered_posts:
+        user = next((u for u in users if u["id"] == post["user_id"]), None)
+        post["username"] = user["username"] if user else "Unknown"
+
+    return render_template(
+        "board.html",
+        posts=filtered_posts,
+        selected_neighborhood=selected_neighborhood
+    )
 
 @app.route("/community")
 def community():

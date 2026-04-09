@@ -15,13 +15,24 @@
     <textarea name="description" required></textarea><br><br>
 
     <label>Neighborhood:</label><br>
-    <input type="text" name="neighborhood" required><br><br>
+    <select name="neighborhood">
+    <option>Poblenou</option>
+    <option>Gracia</option>
+    <option>Eixample</option>
+    <option>Raval</option>
+    <option>El Born</option>
+    <option>Barceloneta</option>
+    <option>Sants</option>
+    <option>Clot</option>
+    <option>Gothic</option>
+    </select>
 
     <label>Time:</label><br>
     <select name="time">
         <option value="morning">Morning</option>
         <option value="afternoon">Afternoon</option>
         <option value="night">Night</option>
+        <option value="any">Any</option>
     </select><br><br>
 
     <label>Type:</label><br>
@@ -36,17 +47,48 @@
 
 <hr>
 
+<h3>Filter by Neighborhood</h3>
+
+<form method="GET">
+    <select name="neighborhood">
+        <option value="">-- Select neighborhood --</option>
+        <option>Poblenou</option>
+        <option>Gracia</option>
+        <option>Eixample</option>
+        <option>Raval</option>
+        <option>El Born</option>
+        <option>Barceloneta</option>
+        <option>Sants</option>
+        <option>Clot</option>
+        <option>Gothic</option>
+    </select>
+
+    <button type="submit">Filter</button>
+</form>
+
+<br>
+
+<a href="{{ url_for('board') }}">Clear filter</a>
+
+{% if selected_neighborhood %}
+    <p>Showing posts for: <strong>{{ selected_neighborhood }}</strong></p>
+{% endif %}
+
 <h3>All Posts</h3>
 
 {% if posts %}
     {% for post in posts %}
         <div style="border:1px solid black; padding:10px; margin-bottom:10px;">
+            
             <strong>{{ post.title }}</strong><br>
+            by 👤 {{ post.get('username', 'Unknown') }}
+
             {{ post.description }}<br><br>
 
             📍 {{ post.neighborhood }} |
             🕒 {{ post.time }} |
             🔄 {{ post.type }}
+
         </div>
     {% endfor %}
 {% else %}
