@@ -3,11 +3,15 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Temporary storage (replace later with database)
 current_user_id = 1
 
-def init_db():
+def get_db_connection():
     conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Users table
@@ -47,18 +51,14 @@ def home():
 def register():
     if request.method == "POST":
         # Get user data
-        
         username = request.form.get("username")
         email = request.form.get("email")
         neighborhood = request.form.get("neighborhood")
-
         # Get dog data
         dog_name = request.form.get("dog_name")
         dog_breed = request.form.get("dog_breed")
-
         # Store it 
-
-        conn = sqlite3.connect("database.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -79,7 +79,7 @@ def success():
 
 @app.route("/about")
 def about():
-    return "<h2>About Zampa</h2>"
+    return render_template("about.html")
 
 @app.route("/board", methods=["GET", "POST"])
 def board():
@@ -90,7 +90,7 @@ def board():
         time = request.form.get("time")
         post_type = request.form.get("type")
 
-        conn = sqlite3.connect("database.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -101,7 +101,7 @@ def board():
         conn.commit()
         conn.close()
 
-    conn = sqlite3.connect("database.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     selected_neighborhood = request.args.get("neighborhood")
@@ -126,21 +126,81 @@ def board():
     posts = []
     for row in rows:
         posts.append({
-            "id": row[0],
-            "title": row[1],
-            "description": row[2],
-            "neighborhood": row[3],
-            "time": row[4],
-            "type": row[5],
-            "user_id": row[6],
-            "username": row[7]
-        })
+        "id": row["id"],
+        "title": row["title"],
+        "description": row["description"],
+        "neighborhood": row["neighborhood"],
+        "time": row["time"],
+        "type": row["type"],
+        "user_id": row["user_id"],
+        "username": row["username"]
+    })
 
     return render_template(
         "board.html",
         posts=posts,
         selected_neighborhood=selected_neighborhood
     )
+
+@app.route("/users")
+def users_list():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users")
+    rows = cursor.fetchall()
+    conn.close()
+
+    users = []
+    for row in rows:
+        users.append({
+            "id": row["id"],
+            "username": row["username"],
+            "email": row["email"],
+            "neighborhood": row["neighborhood"],
+            "dog_name": row["dog_name"],
+            "dog_breed": row["dog_breed"]
+        })
+
+    return render_template("users.html", users=users)
+
+@app.route("/user/<int:user_id>")
+def user_profile(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user_row = cursor.fetchone()
+
+    if user_row is None:
+        conn.close()
+        return "<h2>User not found</h2>"
+
+    cursor.execute("SELECT * FROM posts WHERE user_id = ?", (user_id,))
+    post_rows = cursor.fetchall()
+    conn.close()
+
+    user = {
+        "id": user_row["id"],
+        "username": user_row["username"],
+        "email": user_row["email"],
+        "neighborhood": user_row["neighborhood"],
+        "dog_name": user_row["dog_name"],
+        "dog_breed": user_row["dog_breed"]
+    }
+
+    posts = []
+    for row in post_rows:
+        posts.append({
+            "id": row["id"],
+            "title": row["title"],
+            "description": row["description"],
+            "neighborhood": row["neighborhood"],
+            "time": row["time"],
+            "type": row["type"]
+        })
+
+    return render_template("user_profile.html", user=user, posts=posts)
 
 @app.route("/community")
 def community():

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ user.username }}'s Profile</h2>
+
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Neighborhood:</strong> {{ user.neighborhood }}</p>
+
+<h3>Dog Info</h3>
+<p><strong>Name:</strong> {{ user.dog_name }}</p>
+<p><strong>Breed:</strong> {{ user.dog_breed }}</p>
+
+<hr>
+
+<h3>Posts by {{ user.username }}</h3>
+
+{% if posts %}
+    {% for post in posts %}
+        <div style="border:1px solid black; padding:10px; margin-bottom:10px;">
+            <strong>{{ post.title }}</strong><br>
+            {{ post.description }}<br><br>
+            📍 {{ post.neighborhood }} |
+            🕒 {{ post.time }} |
+            🔄 {{ post.type }}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>This user has not created any posts yet.</p>
+{% endif %}
+
+{% endblock %}
