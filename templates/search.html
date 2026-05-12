@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method="GET" action="{{ url_for('search') }}">
+    <label>Person name:</label>
+    <input 
+        type="text" 
+        name="username" 
+        value="{{ username }}"
+        placeholder="Example: Maria"
+    >
+
+    <label>Dog name:</label>
+    <input 
+        type="text" 
+        name="dog_name" 
+        value="{{ dog_name }}"
+        placeholder="Example: Max"
+    >
+
+    <label>Neighborhood:</label>
+    <input 
+        type="text" 
+        name="neighborhood" 
+        value="{{ neighborhood }}"
+        placeholder="Example: Poblenou"
+    >
+
+    <button type="submit">Search</button>
+</form>
+
+<hr>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+
+{% for user in users %}
+    <div style="
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 15px;
+        width: 250px;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    ">
+        <h3>{{ user.username }}</h3>
+        <p><strong>📍</strong> {{ user.neighborhood }}</p>
+        <p><strong>🐶</strong> {{ user.dog_name }}</p>
+        <p><strong>Breed:</strong> {{ user.dog_breed }}</p>
+
+        <a href="{{ url_for('user_profile', user_id=user.id) }}">
+            <button>View Profile</button>
+        </a>
+    </div>
+{% else %}
+    <p>No users found.</p>
+{% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 
 app = Flask(__name__)
-
-current_user_id = 1
+app.secret_key = "1Donz57heSxD"
 
 def get_db_connection():
     conn = sqlite3.connect("database.db")
@@ -19,7 +19,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT,
-            email TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
             neighborhood TEXT,
             dog_name TEXT,
             dog_breed TEXT
@@ -50,39 +51,70 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        # Get user data
         username = request.form.get("username")
         email = request.form.get("email")
+        password = request.form.get("password")
         neighborhood = request.form.get("neighborhood")
-        # Get dog data
         dog_name = request.form.get("dog_name")
         dog_breed = request.form.get("dog_breed")
-        # Store it 
+
+        hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO users (username, email, neighborhood, dog_name, dog_breed)
-            VALUES (?, ?, ?, ?, ?)
-        """, (username, email, neighborhood, dog_name, dog_breed))
+        try:
+            cursor.execute("""
+                INSERT INTO users (username, email, password, neighborhood, dog_name, dog_breed)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (username, email, hashed_password, neighborhood, dog_name, dog_breed))
 
-        conn.commit()
-        conn.close()
+            conn.commit()
 
-        return redirect(url_for("board"))
+            user_id = cursor.lastrowid
+            session["user_id"] = user_id
+
+            conn.close()
+            return redirect(url_for("my_profile"))
+
+        except sqlite3.IntegrityError:
+            conn.close()
+            return "<h2>Email already registered. Please use another one.</h2>"
 
     return render_template("register.html")
-
-@app.route("/success")
-def success():
-    return "<h2>Registration successful!</h2>"
 
 @app.route("/about")
 def about():
     return render_template("about.html")
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user["password"], password): 
+            session["user_id"] = user["id"]
+            return redirect(url_for("my_profile"))
+        else:
+            return "<h2>Invalid email or password.</h2>"
+
+    return render_template("login.html")
+
 @app.route("/board", methods=["GET", "POST"])
 def board():
+    user_id = session.get("user_id")
+
+    if user_id is None:
+        return redirect(url_for("login"))
+
     if request.method == "POST":
         title = request.form.get("title")
         description = request.form.get("description")
@@ -95,8 +127,8 @@ def board():
 
         cursor.execute("""
             INSERT INTO posts (title, description, neighborhood, time, type, user_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (title, description, neighborhood, time, post_type, current_user_id))
+            VALUES (?, ?, ?, ?, ?, ?) 
+        """, (title, description, neighborhood, time, post_type, user_id))  
 
         conn.commit()
         conn.close()
@@ -126,15 +158,15 @@ def board():
     posts = []
     for row in rows:
         posts.append({
-        "id": row["id"],
-        "title": row["title"],
-        "description": row["description"],
-        "neighborhood": row["neighborhood"],
-        "time": row["time"],
-        "type": row["type"],
-        "user_id": row["user_id"],
-        "username": row["username"]
-    })
+            "id": row["id"],
+            "title": row["title"],
+            "description": row["description"],
+            "neighborhood": row["neighborhood"],
+            "time": row["time"],
+            "type": row["type"],
+            "user_id": row["user_id"],
+            "username": row["username"]
+        })
 
     return render_template(
         "board.html",
@@ -208,15 +240,86 @@ def community():
 
 @app.route("/search")
 def search():
-    return "<h2>Search (coming soon)</h2>"
+    username = request.args.get("username", "")
+    dog_name = request.args.get("dog_name", "")
+    neighborhood = request.args.get("neighborhood", "")
 
-@app.route("/profile")
-def profile():
-    return "<h2>My Profile (coming soon)</h2>"
+    conn = get_db_connection()
+
+    users = conn.execute("""
+        SELECT * FROM users
+        WHERE username LIKE ?
+        AND dog_name LIKE ?
+        AND neighborhood LIKE ?
+    """, (
+        "%" + username + "%",
+        "%" + dog_name + "%",
+        "%" + neighborhood + "%"
+    )).fetchall()
+
+    print(users)  
+
+    conn.close()
+
+    return render_template(
+        "search.html",
+        users=users,
+        username=username,
+        dog_name=dog_name,
+        neighborhood=neighborhood
+    )
+
+@app.route("/my_profile")
+def my_profile():
+    user_id = session.get("user_id")
+
+    if user_id is None:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user_row = cursor.fetchone()
+
+    if user_row is None:
+        conn.close()
+        return "<h2>No profile found.</h2>"
+
+    cursor.execute("SELECT * FROM posts WHERE user_id = ?", (user_id,))
+    post_rows = cursor.fetchall()
+    conn.close()
+
+    user = {
+        "id": user_row["id"],
+        "username": user_row["username"],
+        "email": user_row["email"],
+        "neighborhood": user_row["neighborhood"],
+        "dog_name": user_row["dog_name"],
+        "dog_breed": user_row["dog_breed"]
+    }
+
+    posts = []
+    for row in post_rows:
+        posts.append({
+            "id": row["id"],
+            "title": row["title"],
+            "description": row["description"],
+            "neighborhood": row["neighborhood"],
+            "time": row["time"],
+            "type": row["type"]
+        })
+
+    return render_template("my_profile.html", user=user, posts=posts)
 
 @app.route("/tokens")
 def tokens():
     return "<h2>Tokens system (coming soon)</h2>"
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 init_db()
 
