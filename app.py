@@ -10,6 +10,12 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def login_required():
+    user_id = session.get("user_id")
+    if user_id is None:
+        return redirect(url_for("login"))
+    return None
+
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -175,7 +181,12 @@ def board():
     )
 
 @app.route("/users")
+
 def users_list():
+    guard = login_required()
+    if guard:
+        return guard
+    
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -239,7 +250,12 @@ def community():
     return "<h2>Community (coming soon)</h2>"
 
 @app.route("/search")
+
 def search():
+    guard = login_required()
+    if guard:
+        return guard
+    
     username = request.args.get("username", "")
     dog_name = request.args.get("dog_name", "")
     neighborhood = request.args.get("neighborhood", "")
@@ -320,6 +336,72 @@ def tokens():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/post/delete/<int:post_id>", methods=["POST"])
+def delete_post(post_id):
+    guard = login_required()
+    if guard:
+        return guard
+
+    user_id = session.get("user_id")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # First, verify this post belongs to the logged-in user
+    cursor.execute("SELECT * FROM posts WHERE id = ? AND user_id = ?", (post_id, user_id))
+    post = cursor.fetchone()
+
+    if post is None:
+        conn.close()
+        return "<h2>Post not found or you don't have permission to delete it.</h2>"
+
+    cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("my_profile"))
+
+@app.route("/edit_profile", methods=["GET", "POST"])
+def edit_profile():
+    guard = login_required()
+    if guard:
+        return guard
+
+    user_id = session.get("user_id")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        neighborhood = request.form.get("neighborhood")
+        dog_name = request.form.get("dog_name")
+        dog_breed = request.form.get("dog_breed")
+
+        cursor.execute("""
+            UPDATE users
+            SET username = ?, neighborhood = ?, dog_name = ?, dog_breed = ?
+            WHERE id = ?
+        """, (neighborhood, dog_name, dog_breed, user_id))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("my_profile"))
+
+    # GET request — load current data to pre-fill the form
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    user_row = cursor.fetchone()
+    conn.close()
+
+    user = {
+        "username": user_row["username"],
+        "email": user_row["email"],   
+        "neighborhood": user_row["neighborhood"],
+        "dog_name": user_row["dog_name"],
+        "dog_breed": user_row["dog_breed"]
+    }
+
+    return render_template("edit_profile.html", user=user)
 
 init_db()
 
