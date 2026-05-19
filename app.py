@@ -380,7 +380,7 @@ def edit_profile():
 
         cursor.execute("""
             UPDATE users
-            SET username = ?, neighborhood = ?, dog_name = ?, dog_breed = ?
+            SET neighborhood = ?, dog_name = ?, dog_breed = ?
             WHERE id = ?
         """, (neighborhood, dog_name, dog_breed, user_id))
 
