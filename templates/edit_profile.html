@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Edit Profile</h2>
+
+<p><strong>Username:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+
+<form method="POST">
+
+    <label>Neighborhood:</label><br>
+    <select name="neighborhood">
+        {% set neighborhoods = [
+            'Poblenou', 'Gracia', 'Eixample', 'Raval',
+            'El Born', 'Barceloneta', 'Sants', 'Clot', 'Gothic', 'Badalona'
+        ] %}
+        {% for n in neighborhoods %}
+            <option value="{{ n }}" {% if n == user.neighborhood %}selected{% endif %}>
+                {{ n }}
+            </option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Dog Name:</label><br>
+    <input type="text" name="dog_name" value="{{ user.dog_name }}" required><br><br>
+
+    <label>Dog Breed:</label><br>
+    <input type="text" name="dog_breed" value="{{ user.dog_breed }}" required><br><br>
+
+    <button type="submit">Save Changes</button>
+
+</form>
+
+{% endblock %}
