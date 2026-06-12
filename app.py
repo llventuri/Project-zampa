@@ -337,7 +337,7 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-@app.route("/post/delete/<int:post_id>", methods=["POST"])
+@app.route("/post/delete/<int:post_id>", methods=["DELETE"])
 def delete_post(post_id):
     guard = login_required()
     if guard:
