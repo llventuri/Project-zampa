@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+  <div class="hero__copy">
+    <div class="hero__tag">
+      <span class="eyebrow">Barcelona Dog Community</span>
+    </div>
+    <h1 class="hero__title">
+      Your neighbour<br>walks your dog.<br>
+      <em>You walk theirs.</em>
+    </h1>
+    <p class="hero__subtitle">
+      Zampa connects dog owners across Barcelona's neighbourhoods for mutual dog walking, sitting, and care — no money, just community and tokens.
+    </p>
+    <div class="hero__actions">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Join the community</a>
+      <a href="{{ url_for('board') }}"    class="btn btn-outline btn-lg">Browse the board</a>
+    </div>
+  </div>
+
+  <div class="hero__visual">
+    <div class="hero__visual-grid">
+      <div class="hero__visual-card">
+        <span class="vc-emoji">🐕</span>
+        <span class="vc-name">Bruno &amp; Marta</span>
+        <span class="vc-sub">Poblenou · Labrador</span>
+        <span class="vc-tag">🦮 Needs a walk</span>
+      </div>
+      <div class="hero__visual-card">
+        <span class="vc-emoji">🐩</span>
+        <span class="vc-name">Luna &amp; Jordi</span>
+        <span class="vc-sub">Gràcia · Poodle</span>
+        <span class="vc-tag" style="background:var(--mint-pale);color:var(--mint-deep);">🏠 Offers sitting</span>
+      </div>
+      <div class="hero__visual-card">
+        <span class="vc-emoji">🐾</span>
+        <span class="vc-name">Max &amp; Sara</span>
+        <span class="vc-sub">Eixample · Border Collie</span>
+        <span class="vc-tag">🌅 Morning walker</span>
+      </div>
+      <div class="hero__visual-card" style="background:var(--peach-pale);border:1.5px solid var(--peach-warm);">
+        <span class="vc-emoji">🪙</span>
+        <span class="vc-name">Token system</span>
+        <span class="vc-sub">Earn by helping</span>
+        <span class="vc-tag" style="background:var(--coral);color:#fff;">Coming soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="neighborhoods">
+  <p class="eyebrow" style="margin-bottom:16px;">Popular neighbourhoods</p>
+  <div class="hood-scroll">
+    {% set hoods = ["Poblenou","Gràcia","Eixample","Barceloneta","Sant Pere","El Born","Sarrià","Les Corts","Horta","Nou Barris","Sant Andreu","Sants"] %}
+    {% for hood in hoods %}
+      <div class="hood-chip"><a href="{{ url_for('board') }}?neighborhood={{ hood }}">{{ hood }}</a></div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="how-section">
+  <div style="max-width:1160px;margin:0 auto;">
+    <p class="eyebrow">Com funciona</p>
+    <h2>Neighbourly care, <em>simplified</em></h2>
+  </div>
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-card__icon">🐾</div>
+      <h3>Create your profile</h3>
+      <p>Register you and your dog — name, breed, neighbourhood, personality. Your profile is your passport to the community.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-card__icon">📋</div>
+      <h3>Post on the board</h3>
+      <p>Need a morning walk? Can sit a dog this weekend? Post a card. Filter by neighbourhood to find neighbours nearby.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-card__icon">🪙</div>
+      <h3>Earn tokens</h3>
+      <p>Can't find a match but still want to help? Earn tokens by walking or sitting someone else's dog. Spend them later when you need a hand.</p>
+    </div>
+  </div>
+</div>
+
+<section style="text-align:center;padding:80px 24px;max-width:600px;margin:0 auto;">
+  <svg width="56" height="56" viewBox="0 0 32 32" fill="none" style="margin:0 auto 20px;">
+    <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+    <ellipse cx="9"  cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+    <ellipse cx="14" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+    <ellipse cx="19" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+    <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+    <ellipse cx="16" cy="20.5" rx="4.5" ry="4" fill="#3D1F00" opacity="0.15"/>
+  </svg>
+  <h2>Ready to join your barrio's dog network?</h2>
+  <p style="color:var(--ink-mid);margin:16px 0 32px;line-height:1.7;">
+    Already over a dozen dog owners in Poblenou, Gràcia and Eixample exchanging walks. Your dog will thank you.
+  </p>
+  <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create your free account</a>
+</section>
+
+{% endblock %}

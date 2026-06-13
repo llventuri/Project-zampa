@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Community{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Community</p>
+    <h1>Meet your neighbours</h1>
+    <p>Dog owners across Barcelona ready to exchange walks and sits.</p>
+  </div>
+  <a href="{{ url_for('search') }}" class="btn btn-primary">🔍 Search members</a>
+</div>
+
+<div class="users-grid">
+  {% for user in users %}
+    <div class="user-card">
+      <div class="avatar avatar--lg user-card__avatar">{{ user.username[0].upper() }}</div>
+      <p class="user-card__name">{{ user.username }}</p>
+      <p class="user-card__hood">📍 {{ user.neighborhood or '—' }}</p>
+      {% if user.dog_name %}
+        <p class="user-card__dog">🐾 {{ user.dog_name }}{% if user.dog_breed %} · {{ user.dog_breed }}{% endif %}</p>
+      {% endif %}
+      <a href="{{ url_for('user_profile', user_id=user.id) }}" class="btn btn-outline btn-sm" style="margin-top:12px;width:100%;">See profile</a>
+    </div>
+  {% else %}
+    <div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-state__icon">🐾</div>
+      <p>No community members yet. Be the first!</p>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Join Zampa</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

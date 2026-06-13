@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+
+  <!-- ░░ SIDEBAR CARD ░░ -->
+  <aside>
+    <div class="profile-card">
+      <div class="avatar avatar--xl profile-card__avatar">{{ user.username[0].upper() }}</div>
+      <h2 class="profile-card__name">{{ user.username }}</h2>
+      <p class="profile-card__hood">📍 {{ user.neighborhood or 'No neighbourhood set' }}</p>
+      <a href="{{ url_for('edit_profile') }}" class="btn btn-outline btn-sm"
+         style="width:100%;margin-bottom:12px;">Edit profile</a>
+
+      {% if user.dog_name %}
+        <div class="profile-card__dog">
+          <p class="dog-label">My dog 🐾</p>
+          <p class="dog-name">{{ user.dog_name }}</p>
+
+          <!-- Breed + sex on same line -->
+          {% set meta = [] %}
+          {% if user.dog_breed %}{% set meta = meta + [user.dog_breed] %}{% endif %}
+          {% if user.dog_sex   %}{% set meta = meta + [user.dog_sex]   %}{% endif %}
+          {% if meta %}
+            <p class="dog-info">{{ meta | join(' · ') }}</p>
+          {% endif %}
+
+          <!-- Age + weight on same line -->
+          {% set stats = [] %}
+          {% if user.dog_age    %}{% set stats = stats + [user.dog_age|string + ' yr'] %}{% endif %}
+          {% if user.dog_weight %}{% set stats = stats + [user.dog_weight|string + ' kg'] %}{% endif %}
+          {% if stats %}
+            <p class="dog-info">{{ stats | join(' · ') }}</p>
+          {% endif %}
+
+          {% if user.dog_behaviour %}
+            <p class="dog-info" style="margin-top:6px;font-style:italic;">
+              "{{ user.dog_behaviour }}"
+            </p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="profile-card__dog" style="text-align:center;color:var(--ink-light);">
+          <p class="dog-label">My dog 🐾</p>
+          <p style="font-size:0.8rem;margin-bottom:8px;">No dog added yet.</p>
+          <a href="{{ url_for('edit_profile') }}" class="btn btn-outline btn-sm">Add dog</a>
+        </div>
+      {% endif %}
+
+      <div class="profile-tokens">
+        <div>
+          <div class="token-amount">0</div>
+          <div class="token-label">Zampa tokens</div>
+        </div>
+        <div class="token-icon">🪙</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ░░ POSTS ░░ -->
+  <div class="profile-main">
+    <div class="profile-section">
+      <div class="profile-section__header">
+        <h3>My posts</h3>
+        <a href="{{ url_for('board') }}" class="btn btn-primary btn-sm">+ New post</a>
+      </div>
+
+      {% if posts %}
+        <div class="posts-grid">
+          {% for post in posts %}
+            {% set type_label = {'walk':'🦮 Walk','sit':'🏠 Sit','offer':'🤝 Offer'} %}
+            <div class="post-card" data-type="{{ post.type }}">
+              <div class="post-card__accent"></div>
+              <div class="post-card__body">
+                <div class="post-card__meta">
+                  <span class="post-type-badge post-type-badge--{{ post.type }}">
+                    {{ type_label.get(post.type, post.type) }}
+                  </span>
+                  {% if post.time %}
+                    <span class="post-card__hood">🕐 {{ post.time }}</span>
+                  {% endif %}
+                </div>
+                <h3 class="post-card__title">{{ post.title }}</h3>
+                {% if post.description %}
+                  <p class="post-card__desc">{{ post.description }}</p>
+                {% endif %}
+              </div>
+              <div class="post-card__footer">
+                <span class="post-card__hood">📍 {{ post.neighborhood }}</span>
+                <form method="POST" action="/post/delete/{{ post.id }}"
+                      onsubmit="return confirm('Delete this post?')">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state__icon">📋</div>
+          <p>You haven't posted anything yet.<br>Let your neighbours know you're here!</p>
+          <a href="{{ url_for('board') }}" class="btn btn-primary btn-sm">Go to the board</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

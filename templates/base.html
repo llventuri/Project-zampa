@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Zampa{% endblock %} — Dog Exchange Community</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/zampa.css') }}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="{{ url_for('home') }}" class="navbar__logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+        <ellipse cx="9"  cy="12.5" rx="3"   ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+        <ellipse cx="14" cy="10"   rx="3"   ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+        <ellipse cx="19" cy="10"   rx="3"   ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+        <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+        <ellipse cx="16" cy="20.5" rx="4.5" ry="4" fill="#3D1F00" opacity="0.12"/>
+      </svg>
+      Zampa
+    </a>
+
+    <nav class="navbar__nav">
+      <a href="{{ url_for('board') }}"      class="nav-link {% if request.endpoint == 'board'      %}active{% endif %}">Board</a>
+      <a href="{{ url_for('users_list') }}" class="nav-link {% if request.endpoint == 'users_list' %}active{% endif %}">Community</a>
+      <a href="{{ url_for('search') }}"     class="nav-link {% if request.endpoint == 'search'     %}active{% endif %}">Search</a>
+      <a href="{{ url_for('about') }}"      class="nav-link {% if request.endpoint == 'about'      %}active{% endif %}">About</a>
+    </nav>
+
+    <div class="navbar__actions">
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('my_profile') }}" class="btn btn-ghost btn-sm">My Profile</a>
+        <a href="{{ url_for('logout') }}"     class="btn btn-outline btn-sm">Log out</a>
+      {% else %}
+        <a href="{{ url_for('login') }}"    class="btn btn-ghost btn-sm">Log in</a>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Join Zampa</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="footer-brand">
+      <div class="brand-name">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+          <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+          <ellipse cx="9"  cy="12.5" rx="3"   ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+          <ellipse cx="14" cy="10"   rx="3"   ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+          <ellipse cx="19" cy="10"   rx="3"   ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+          <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+        </svg>
+        Zampa
+      </div>
+      <p>A neighbour-to-neighbour dog exchange community. Walk, sit, share — earn tokens and make tails wag in your barrio.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Discover</h5>
+      <ul>
+        <li><a href="{{ url_for('board') }}">Board</a></li>
+        <li><a href="{{ url_for('users_list') }}">Community</a></li>
+        <li><a href="{{ url_for('search') }}">Search</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Account</h5>
+      <ul>
+        {% if session.get('user_id') %}
+          <li><a href="{{ url_for('my_profile') }}">My Profile</a></li>
+          <li><a href="{{ url_for('edit_profile') }}">Edit Profile</a></li>
+          <li><a href="{{ url_for('logout') }}">Log out</a></li>
+        {% else %}
+          <li><a href="{{ url_for('register') }}">Join Zampa</a></li>
+          <li><a href="{{ url_for('login') }}">Log in</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Zampa. Made with 🐾 in Barcelona.</span>
+    <span>Poblenou · Gràcia · Eixample · Barceloneta</span>
+  </div>
+</footer>
+
+</body>
+</html>

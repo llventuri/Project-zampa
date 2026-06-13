@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Board{% endblock %}
+
+{% block content %}
+
+{# ── Relative time helper ─────────────────────────────────────────────────── #}
+{# Usage: {{ post.created_at | friendly_time }}  — rendered via JS below       #}
+
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Community Board</p>
+    <h1>Find a walk. Offer a sit.</h1>
+    <p>Browse posts from your neighbours — filter by barrio or post type.</p>
+  </div>
+  {% if session.get('user_id') %}
+    <button class="btn btn-primary" onclick="document.getElementById('new-post').scrollIntoView({behavior:'smooth'})">+ New post</button>
+  {% else %}
+    <a href="{{ url_for('login') }}" class="btn btn-primary">Log in to post</a>
+  {% endif %}
+</div>
+
+<div class="board-layout">
+
+  <aside class="filter-sidebar">
+    <h4>Filter</h4>
+    <form method="GET" action="{{ url_for('board') }}">
+      <div class="filter-group">
+        <label class="filter-label">Neighbourhood</label>
+        <select name="neighborhood" class="form-control" onchange="this.form.submit()">
+          <option value="">All neighbourhoods</option>
+          {% set hoods = ["Barceloneta","Born","Eixample","Gràcia","Horta","Les Corts","Nou Barris","Poblenou","Sant Andreu","Sant Pere","Sarrià","Sants"] %}
+          {% for hood in hoods %}
+            <option value="{{ hood }}" {% if selected_neighborhood == hood %}selected{% endif %}>{{ hood }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if selected_neighborhood %}
+        <a href="{{ url_for('board') }}" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;">Clear filter</a>
+      {% endif %}
+    </form>
+
+    <div class="paw-divider" style="margin:20px 0;"></div>
+
+    <div style="font-size:0.78rem;color:var(--ink-light);">
+      <p style="margin-bottom:8px;font-weight:600;color:var(--ink);">Post types</p>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--coral);flex-shrink:0;"></span>🦮 Walk needed
+        </span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--mint);flex-shrink:0;"></span>🏠 Sitting offer
+        </span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:#F5C842;flex-shrink:0;"></span>🤝 Other offer
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    {% if session.get('user_id') %}
+      <div id="new-post" class="new-post-section">
+        <h3>📋 Post something new</h3>
+        <form method="POST" action="{{ url_for('board') }}">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" name="title" class="form-control" placeholder="Ex: Need a walker at 8am in Poblenou" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Neighbourhood</label>
+              <select name="neighborhood" class="form-control" required>
+                <option value="">Select…</option>
+                {% set hoods = ["Barceloneta","Born","Eixample","Gràcia","Horta","Les Corts","Nou Barris","Poblenou","Sant Andreu","Sant Pere","Sarrià","Sants"] %}
+                {% for hood in hoods %}
+                  <option value="{{ hood }}">{{ hood }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Time / schedule</label>
+              <input type="text" name="time" class="form-control" placeholder="Ex: Weekdays 8–9am" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select name="type" class="form-control" required>
+                <option value="walk">🦮 Walk needed</option>
+                <option value="sit">🏠 Sitting offer</option>
+                <option value="offer">🤝 Other offer</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" placeholder="Tell neighbours a bit more about your dog and what you need…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Post to board</button>
+        </form>
+      </div>
+    {% endif %}
+
+    {% if posts %}
+      <div class="posts-grid">
+        {% for post in posts %}
+          {% set type_label = {'walk':'🦮 Walk','sit':'🏠 Sit','offer':'🤝 Offer'} %}
+          <div class="post-card" data-type="{{ post.type }}">
+            <div class="post-card__accent"></div>
+            <div class="post-card__body">
+              <div class="post-card__meta">
+                <span class="post-type-badge post-type-badge--{{ post.type }}">{{ type_label.get(post.type, post.type) }}</span>
+                {% if post.time %}<span class="post-card__hood">🕐 {{ post.time }}</span>{% endif %}
+              </div>
+              <h3 class="post-card__title">{{ post.title }}</h3>
+              {% if post.description %}<p class="post-card__desc">{{ post.description }}</p>{% endif %}
+            </div>
+            <div class="post-card__footer">
+              <div class="post-card__author">
+                <div class="avatar">{{ post.username[0].upper() }}</div>
+                <div>
+                  <div class="post-card__author-name">{{ post.username }}</div>
+                  <div class="post-card__hood">📍 {{ post.neighborhood }}</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                {% if post.created_at %}
+                  <time class="post-card__hood post-timestamp"
+                        datetime="{{ post.created_at }}"
+                        title="{{ post.created_at }}">
+                    {{ post.created_at[:10] }}
+                  </time>
+                {% endif %}
+                <a href="{{ url_for('user_profile', user_id=post.user_id) }}" class="btn btn-outline btn-sm">View</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state__icon">🐾</div>
+        <p>No posts yet{% if selected_neighborhood %} in <strong>{{ selected_neighborhood }}</strong>{% endif %}.</p>
+        {% if session.get('user_id') %}
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-post').scrollIntoView({behavior:'smooth'})">Be the first to post</button>
+        {% else %}
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Join and post first</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+<script>
+(function () {
+  function timeAgo(dateStr) {
+    if (!dateStr) return "";
+    var then = new Date(dateStr.replace(" ", "T") + (dateStr.includes("T") ? "" : "Z"));
+    var now  = new Date();
+    var sec  = Math.floor((now - then) / 1000);
+    if (isNaN(sec) || sec < 0) return dateStr.slice(0, 10);
+    if (sec < 60)   return "just now";
+    if (sec < 3600) return Math.floor(sec / 60) + " min ago";
+    if (sec < 86400) {
+      var h = Math.floor(sec / 3600);
+      return h + (h === 1 ? " hr ago" : " hrs ago");
+    }
+    var d = Math.floor(sec / 86400);
+    if (d < 7)  return d + (d === 1 ? " day ago" : " days ago");
+    if (d < 30) return Math.floor(d / 7) + (Math.floor(d/7) === 1 ? " week ago" : " weeks ago");
+    if (d < 365) return Math.floor(d / 30) + (Math.floor(d/30) === 1 ? " month ago" : " months ago");
+    return Math.floor(d / 365) + (Math.floor(d/365) === 1 ? " year ago" : " years ago");
+  }
+  document.querySelectorAll(".post-timestamp").forEach(function (el) {
+    el.textContent = timeAgo(el.getAttribute("datetime"));
+  });
+})();
+</script>
+{% endblock %}

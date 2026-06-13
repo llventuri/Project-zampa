@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="auth-wrap" style="padding-top:48px;">
+  <div class="auth-card" style="max-width:560px;">
+
+    <h2>Edit profile</h2>
+    <p class="auth-card__sub">Update your neighbourhood and your dog's details.</p>
+
+    <form method="POST" action="{{ url_for('edit_profile') }}">
+
+      <!-- ── Your details ── -->
+      <div class="section-divider">Your details</div>
+
+      <div class="form-group">
+        <label class="form-label">Neighbourhood</label>
+        <select name="neighborhood" class="form-control">
+          <option value="">Select…</option>
+          {% for hood in ["Barceloneta","Born","Eixample","Gràcia","Horta","Les Corts","Nou Barris","Poblenou","Sant Andreu","Sant Pere","Sarrià","Sants"] %}
+            <option value="{{ hood }}" {% if user.neighborhood == hood %}selected{% endif %}>
+              {{ hood }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- ── Your dog ── -->
+      <div class="section-divider">Your dog 🐾</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Dog's name</label>
+          <input type="text" name="dog_name" class="form-control"
+                 value="{{ user.dog_name or '' }}" placeholder="Bruno" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Breed</label>
+          <input type="text" name="dog_breed" class="form-control"
+                 value="{{ user.dog_breed or '' }}" placeholder="Labrador" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Sex</label>
+          <select name="dog_sex" class="form-control">
+            <option value="">Select…</option>
+            <option value="Male"   {% if user.dog_sex == 'Male'   %}selected{% endif %}>Male</option>
+            <option value="Female" {% if user.dog_sex == 'Female' %}selected{% endif %}>Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age (years)</label>
+          <input type="number" name="dog_age" class="form-control"
+                 value="{{ user.dog_age or '' }}" placeholder="3" min="0" max="25" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Weight (kg)</label>
+          <input type="number" name="dog_weight" class="form-control"
+                 value="{{ user.dog_weight or '' }}" placeholder="28.5" min="0" max="120" step="0.5" />
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">Temperament</label>
+          <input type="text" name="dog_behaviour" class="form-control"
+                 value="{{ user.dog_behaviour or '' }}"
+                 placeholder="Friendly, calm, good with other dogs…" />
+          <p class="form-hint">A short note helps neighbours know what to expect.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Save changes</button>
+        <a href="{{ url_for('my_profile') }}" class="btn btn-outline" style="flex:1;text-align:center;">
+          Cancel
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

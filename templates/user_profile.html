@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+
+  <!-- ░░ SIDEBAR CARD ░░ -->
+  <aside>
+    <div class="profile-card">
+      <div class="avatar avatar--xl profile-card__avatar">{{ user.username[0].upper() }}</div>
+      <h2 class="profile-card__name">{{ user.username }}</h2>
+      <p class="profile-card__hood">📍 {{ user.neighborhood or 'Barcelona' }}</p>
+
+      {% if user.dog_name %}
+        <div class="profile-card__dog">
+          <p class="dog-label">Dog 🐾</p>
+          <p class="dog-name">{{ user.dog_name }}</p>
+
+          {% set meta = [] %}
+          {% if user.dog_breed %}{% set meta = meta + [user.dog_breed] %}{% endif %}
+          {% if user.dog_sex   %}{% set meta = meta + [user.dog_sex]   %}{% endif %}
+          {% if meta %}
+            <p class="dog-info">{{ meta | join(' · ') }}</p>
+          {% endif %}
+
+          {% set stats = [] %}
+          {% if user.dog_age    %}{% set stats = stats + [user.dog_age|string + ' yr'] %}{% endif %}
+          {% if user.dog_weight %}{% set stats = stats + [user.dog_weight|string + ' kg'] %}{% endif %}
+          {% if stats %}
+            <p class="dog-info">{{ stats | join(' · ') }}</p>
+          {% endif %}
+
+          {% if user.dog_behaviour %}
+            <p class="dog-info" style="margin-top:6px;font-style:italic;">
+              "{{ user.dog_behaviour }}"
+            </p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div style="margin-top:20px;">
+        <a href="{{ url_for('board') }}?neighborhood={{ user.neighborhood }}"
+           class="btn btn-outline btn-sm" style="width:100%;">
+          Posts in {{ user.neighborhood or 'this area' }}
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ░░ POSTS ░░ -->
+  <div class="profile-main">
+    <div class="profile-section">
+      <div class="profile-section__header">
+        <h3>{{ user.username }}'s posts</h3>
+        <span class="eyebrow">{{ posts|length }} post{{ 's' if posts|length != 1 }}</span>
+      </div>
+
+      {% if posts %}
+        <div class="posts-grid">
+          {% for post in posts %}
+            {% set type_label = {'walk':'🦮 Walk','sit':'🏠 Sit','offer':'🤝 Offer'} %}
+            <div class="post-card" data-type="{{ post.type }}">
+              <div class="post-card__accent"></div>
+              <div class="post-card__body">
+                <div class="post-card__meta">
+                  <span class="post-type-badge post-type-badge--{{ post.type }}">
+                    {{ type_label.get(post.type, post.type) }}
+                  </span>
+                  {% if post.time %}
+                    <span class="post-card__hood">🕐 {{ post.time }}</span>
+                  {% endif %}
+                </div>
+                <h3 class="post-card__title">{{ post.title }}</h3>
+                {% if post.description %}
+                  <p class="post-card__desc">{{ post.description }}</p>
+                {% endif %}
+              </div>
+              <div class="post-card__footer">
+                <span class="post-card__hood">📍 {{ post.neighborhood }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state__icon">🐾</div>
+          <p>{{ user.username }} hasn't posted anything yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

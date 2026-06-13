@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Join Zampa{% endblock %}
+
+{% block content %}
+<div class="auth-wrap" style="padding-top:48px;">
+  <div class="auth-card" style="max-width:560px;">
+    <div class="auth-card__logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+        <ellipse cx="9"  cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+        <ellipse cx="14" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+        <ellipse cx="19" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+        <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+        <ellipse cx="16" cy="20.5" rx="4.5" ry="4" fill="#3D1F00" opacity="0.12"/>
+      </svg>
+      Zampa
+    </div>
+
+    <h2>Join the community</h2>
+    <p class="auth-card__sub">Set up your profile and your dog's in a few minutes.</p>
+
+    <form method="POST" action="{{ url_for('register') }}">
+
+      <!-- ── About you ── -->
+      <div class="section-divider">About you</div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Name</label>
+        <input type="text" id="username" name="username" class="form-control"
+               placeholder="Your first name" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-control"
+                 placeholder="tu@email.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control"
+                 placeholder="••••••••" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="neighborhood">Your neighbourhood (barrio)</label>
+        <select id="neighborhood" name="neighborhood" class="form-control" required>
+          <option value="">Select your barrio…</option>
+          {% for hood in ["Barceloneta","Born","Eixample","Gràcia","Horta","Les Corts","Nou Barris","Poblenou","Sant Andreu","Sant Pere","Sarrià","Sants"] %}
+            <option value="{{ hood }}">{{ hood }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- ── Your dog ── -->
+      <div class="section-divider">Your dog 🐾</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="dog_name">Dog's name</label>
+          <input type="text" id="dog_name" name="dog_name" class="form-control"
+                 placeholder="Bruno" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="dog_breed">Breed</label>
+          <input type="text" id="dog_breed" name="dog_breed" class="form-control"
+                 placeholder="Labrador" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="dog_sex">Sex</label>
+          <select id="dog_sex" name="dog_sex" class="form-control">
+            <option value="">Select…</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="dog_age">Age (years)</label>
+          <input type="number" id="dog_age" name="dog_age" class="form-control"
+                 placeholder="3" min="0" max="25" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="dog_weight">Weight (kg)</label>
+          <input type="number" id="dog_weight" name="dog_weight" class="form-control"
+                 placeholder="28.5" min="0" max="120" step="0.5" />
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label class="form-label" for="dog_behaviour">Temperament</label>
+          <input type="text" id="dog_behaviour" name="dog_behaviour" class="form-control"
+                 placeholder="Friendly, calm, good with other dogs…" />
+          <p class="form-hint">A short note helps neighbours know what to expect.</p>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">
+        Create my account
+      </button>
+    </form>
+
+    <p class="auth-card__footer">
+      Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

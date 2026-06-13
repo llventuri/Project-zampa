@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-card__logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+        <ellipse cx="9"  cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+        <ellipse cx="14" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+        <ellipse cx="19" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+        <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+        <ellipse cx="16" cy="20.5" rx="4.5" ry="4" fill="#3D1F00" opacity="0.12"/>
+      </svg>
+      Zampa
+    </div>
+    <h2>Welcome back</h2>
+    <p class="auth-card__sub">Log in to see what's happening in your barrio.</p>
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="tu@email.com" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Log in</button>
+    </form>
+    <p class="auth-card__footer">
+      No account yet? <a href="{{ url_for('register') }}">Join Zampa — it's free</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

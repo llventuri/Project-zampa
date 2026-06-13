@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="about-hero">
+  <svg width="64" height="64" viewBox="0 0 32 32" fill="none" style="margin:0 auto 24px;">
+    <ellipse cx="16" cy="20" rx="7" ry="6.5" fill="#F4845F"/>
+    <ellipse cx="9"  cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(-15 9 12.5)"/>
+    <ellipse cx="14" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(-5 14 10)"/>
+    <ellipse cx="19" cy="10"   rx="3" ry="3.5" fill="#F4845F" transform="rotate(5 19 10)"/>
+    <ellipse cx="23.5" cy="12.5" rx="3" ry="3.5" fill="#F4845F" transform="rotate(15 23.5 12.5)"/>
+    <ellipse cx="16" cy="20.5" rx="4.5" ry="4" fill="#3D1F00" opacity="0.12"/>
+  </svg>
+  <p class="eyebrow" style="margin-bottom:16px;">About Zampa</p>
+  <h1>Dog care, <em>the neighbourly way</em></h1>
+  <p style="color:var(--ink-mid);margin-top:20px;font-size:1.1rem;line-height:1.7;">
+    Zampa is a community platform for dog owners in Barcelona to exchange walking and sitting services — based on mutual trust and neighbourhood proximity.
+  </p>
+</div>
+
+<div class="about-content">
+  <div class="about-section">
+    <h2>The idea</h2>
+    <p>Inspired by <strong>HomeExchange</strong> — the idea is simple: I walk your dog this morning, you walk mine tonight. No money changes hands. Just neighbours helping neighbours.</p>
+    <p>We believe cities are more liveable when people know their neighbours. Zampa uses your dog as the perfect icebreaker.</p>
+  </div>
+  <div class="about-section">
+    <h2>How tokens work</h2>
+    <p>Can't find someone to exchange with right now? You can still help a neighbour — and earn <strong>Zampa tokens</strong> for every walk or sit you provide without a direct exchange.</p>
+    <p>When you need care for your dog, spend your tokens. The token system makes it possible to participate even when schedules don't align.</p>
+    <p style="color:var(--gray-600);font-style:italic;">Token values and full system coming soon.</p>
+  </div>
+  <div class="about-section">
+    <h2>Built for Barcelona</h2>
+    <p>Zampa is built neighbourhood by neighbourhood — Poblenou, Gràcia, Eixample, Barceloneta, and beyond. The closer you are, the easier the exchange.</p>
+  </div>
+  <div style="background:var(--peach-mid);border:1.5px solid var(--peach-warm);border-radius:var(--radius-md);padding:32px;text-align:center;margin-top:48px;">
+    <h3 style="margin-bottom:8px;">Ready to join?</h3>
+    <p style="color:var(--ink-mid);margin-bottom:20px;">It's free. Always will be.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create your profile</a>
+  </div>
+</div>
+{% endblock %}
