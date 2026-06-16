@@ -7,7 +7,14 @@
   <!-- ░░ SIDEBAR CARD ░░ -->
   <aside>
     <div class="profile-card">
-      <div class="avatar avatar--xl profile-card__avatar">{{ user.username[0].upper() }}</div>
+      {%- if user.profile_pic -%}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+                     alt="{{ user.username }}"
+                     class="avatar avatar--xl profile-card__avatar"
+                     style="object-fit:cover;" />
+              {%- else -%}
+                <div class="avatar avatar--xl profile-card__avatar">{{ user.username[0].upper() }}</div>
+              {%- endif -%}
       <h2 class="profile-card__name">{{ user.username }}</h2>
       <p class="profile-card__hood">📍 {{ user.neighborhood or 'No neighbourhood set' }}</p>
       <a href="{{ url_for('edit_profile') }}" class="btn btn-outline btn-sm"
@@ -90,7 +97,6 @@
                 <span class="post-card__hood">📍 {{ post.neighborhood }}</span>
                 <form method="POST" action="/post/delete/{{ post.id }}"
                       onsubmit="return confirm('Delete this post?')">
-                  <input type="hidden" name="_method" value="DELETE">
                   <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
               </div>

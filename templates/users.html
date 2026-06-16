@@ -14,7 +14,14 @@
 <div class="users-grid">
   {% for user in users %}
     <div class="user-card">
-      <div class="avatar avatar--lg user-card__avatar">{{ user.username[0].upper() }}</div>
+      {%- if user.profile_pic -%}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+                     alt="{{ user.username }}"
+                     class="avatar avatar--lg user-card__avatar"
+                     style="object-fit:cover;" />
+              {%- else -%}
+                <div class="avatar avatar--lg user-card__avatar">{{ user.username[0].upper() }}</div>
+              {%- endif -%}
       <p class="user-card__name">{{ user.username }}</p>
       <p class="user-card__hood">📍 {{ user.neighborhood or '—' }}</p>
       {% if user.dog_name %}

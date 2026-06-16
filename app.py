@@ -1,15 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
 import sqlite3
 import os
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
 app = Flask(__name__)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4 MB max
 app.secret_key = os.environ.get("SECRET_KEY")
 if not app.secret_key:
     raise RuntimeError("SECRET_KEY is not set. Add it to your .env file.")
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db_connection():
     conn = sqlite3.connect("database.db")
@@ -39,7 +48,8 @@ def init_db():
             dog_sex TEXT,
             dog_age INTEGER,
             dog_weight REAL,
-            dog_behaviour TEXT
+            dog_behaviour TEXT,
+            profile_pic TEXT
         )
     """)
 
@@ -50,6 +60,7 @@ def init_db():
         "dog_age":       "ALTER TABLE users ADD COLUMN dog_age INTEGER",
         "dog_weight":    "ALTER TABLE users ADD COLUMN dog_weight REAL",
         "dog_behaviour": "ALTER TABLE users ADD COLUMN dog_behaviour TEXT",
+        "profile_pic":   "ALTER TABLE users ADD COLUMN profile_pic TEXT",
     }
     for col, sql in new_columns.items():
         if col not in existing_columns:
@@ -91,6 +102,7 @@ def row_to_user(row):
         "dog_age":        row["dog_age"],
         "dog_weight":     row["dog_weight"],
         "dog_behaviour":  row["dog_behaviour"],
+        "profile_pic":    row["profile_pic"],
     }
 
 @app.route("/")
@@ -371,13 +383,31 @@ def edit_profile():
         dog_weight    = request.form.get("dog_weight") or None
         dog_behaviour = request.form.get("dog_behaviour")
 
-        cursor.execute("""
-            UPDATE users
-            SET neighborhood = ?, dog_name = ?, dog_breed = ?,
-                dog_sex = ?, dog_age = ?, dog_weight = ?, dog_behaviour = ?
-            WHERE id = ?
-        """, (neighborhood, dog_name, dog_breed,
-              dog_sex, dog_age, dog_weight, dog_behaviour, user_id))
+        # Handle photo upload
+        file = request.files.get("profile_pic")
+        pic_filename = None
+        if file and file.filename and allowed_file(file.filename):
+            ext = file.filename.rsplit(".", 1)[1].lower()
+            pic_filename = secure_filename(f"user_{user_id}.{ext}")
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], pic_filename))
+
+        if pic_filename:
+            cursor.execute("""
+                UPDATE users
+                SET neighborhood = ?, dog_name = ?, dog_breed = ?,
+                    dog_sex = ?, dog_age = ?, dog_weight = ?, dog_behaviour = ?,
+                    profile_pic = ?
+                WHERE id = ?
+            """, (neighborhood, dog_name, dog_breed,
+                  dog_sex, dog_age, dog_weight, dog_behaviour, pic_filename, user_id))
+        else:
+            cursor.execute("""
+                UPDATE users
+                SET neighborhood = ?, dog_name = ?, dog_breed = ?,
+                    dog_sex = ?, dog_age = ?, dog_weight = ?, dog_behaviour = ?
+                WHERE id = ?
+            """, (neighborhood, dog_name, dog_breed,
+                  dog_sex, dog_age, dog_weight, dog_behaviour, user_id))
 
         conn.commit()
         conn.close()
